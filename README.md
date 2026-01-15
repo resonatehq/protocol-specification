@@ -130,8 +130,6 @@
   "kind": "task.create",
   "head": {},
   "data": {
-    "id": "t_123",
-    "version": 1,
     "pid": "pid_123",
     "ttl": 30000
     "action": promise.create
