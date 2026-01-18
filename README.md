@@ -222,7 +222,7 @@
 **request**
 ```
 {
-  "kind": "task.complete",
+  "kind": "task.fulfill",
   "head": {},
   "data": {
     "id": "t_123",
@@ -235,7 +235,7 @@
 **response**
 ```
 {
-  "kind": "task.complete",
+  "kind": "task.fulfill",
   "head": { "status": 201 | 200 },
   "data": { 
     "promise": {}
