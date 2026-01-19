@@ -7,6 +7,7 @@ type Req =
   | PromiseCreateReq
   | PromiseSettleReq
   | PromiseRegisterReq
+  | PromiseSubscribeReq
   | TaskGetReq
   | TaskCreateReq
   | TaskAcquireReq
@@ -15,6 +16,9 @@ type Req =
   | TaskReleaseReq
   | TaskFenceReq
   | TaskHeartbeatReq
+  | ScheduleGetReq
+  | ScheduleCreateReq
+  | ScheduleDeleteReq
 ```
 
 **response**
@@ -24,6 +28,7 @@ type Res =
   | PromiseCreateRes
   | PromiseSettleRes
   | PromiseRegisterRes
+  | PromiseSubscribeRes
   | TaskGetRes
   | TaskCreateRes
   | TaskAcquireRes
@@ -32,6 +37,9 @@ type Res =
   | TaskReleaseRes
   | TaskFenceRes
   | TaskHeartbeatRes
+  | ScheduleGetRes
+  | ScheduleCreateRes
+  | ScheduleDeleteRes
   | Error
 
 interface Error {
@@ -58,7 +66,7 @@ interface Promise {
   tags: [key: string]: string;
   timeoutAt: number;
   createdAt: number;
-  settledAt: number;
+  settledAt?: number;
 }
 ```
 
@@ -175,6 +183,36 @@ interface PromiseRegisterReq {
 ```ts
 interface PromiseRegisterRes {
   kind: "promise.register";
+  head: {
+    status: 200;
+  };
+  data: {
+    promise: Promise;
+  };
+}
+```
+
+### Subscribe
+
+**request**
+```ts
+interface PromiseSubscribeReq {
+  kind: "promise.subscribe";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    address: string;
+  };
+}
+```
+
+**response**
+```ts
+interface PromiseSubscribeRes {
+  kind: "promise.subscribe";
   head: {
     status: 200;
   };
@@ -423,6 +461,114 @@ interface TaskHeartbeatReq {
 ```ts
 interface TaskHeartbeatRes {
   kind: "task.heartbeat";
+  head: {
+    status: 200;
+  };
+}
+```
+
+## Schedules
+
+### Types
+
+**Schedule**
+```ts
+interface Schedule {
+  id: string;
+  cron: string;
+  promiseId: string;
+  promiseTimeout: number;
+  promiseParam: { headers: [key: string]: string; data: string };
+  promiseTags: [key: string]: string;
+  createdAt: number;
+  nextRunAt: number;
+  lastRunAt?: number;
+}
+```
+
+### Get
+
+**request**
+```ts
+interface ScheduleGetReq {
+  kind: "schedule.get";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+  };
+}
+```
+
+**response**
+```ts
+interface ScheduleGetRes {
+  kind: "schedule.get";
+  head: {
+    status: 200;
+  };
+  data: {
+    schedule: Schedule;
+  };
+}
+```
+
+### Create
+
+**request**
+```ts
+interface ScheduleCreateReq {
+  kind: "schedule.create";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    cron: string;
+    promiseId: string;
+    promiseTimeout: number;
+    promiseParam: { headers: [key: string]: string; data: string };
+    promiseTags: [key: string]: string;
+  };
+}
+```
+
+**response**
+```ts
+interface ScheduleCreateRes {
+  kind: "schedule.create";
+  head: {
+    status: 200;
+  };
+  data: {
+    schedule: Schedule;
+  };
+}
+```
+
+### Delete
+
+**request**
+```ts
+interface ScheduleDeleteReq {
+  kind: "schedule.delete";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+  };
+}
+```
+
+**response**
+```ts
+interface ScheduleDeleteRes {
+  kind: "schedule.delete";
   head: {
     status: 200;
   };
