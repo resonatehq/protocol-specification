@@ -56,9 +56,9 @@ interface Promise {
   param: { headers: [key: string]: string; data: string; }
   value: { headers: [key: string]: string; data: string; }
   tags: [key: string]: string;
-  timeoutOn: number;
-  createdOn: number;
-  settledOn: number;
+  timeoutAt: number;
+  createdAt: number;
+  settledAt: number;
 }
 ```
 
@@ -105,7 +105,7 @@ interface PromiseCreateReq {
     id: string;
     param: { headers: [key: string]: string; data: string };
     tags: [key: string]: string;
-    timeoutOn: number;
+    timeoutAt: number;
   };
 }
 ```
