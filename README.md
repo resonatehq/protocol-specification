@@ -1,330 +1,452 @@
 # Protocol Specification
 
+**request**
+```ts
+type Req =
+  | PromiseGetReq
+  | PromiseCreateReq
+  | PromiseSettleReq
+  | PromiseRegisterReq
+  | TaskGetReq
+  | TaskCreateReq
+  | TaskAcquireReq
+  | TaskSuspendReq
+  | TaskFulfillReq
+  | TaskReleaseReq
+  | TaskFenceReq
+  | TaskHeartbeatReq
+```
+
+**response**
+```ts
+type Res =
+  | PromiseGetRes
+  | PromiseCreateRes
+  | PromiseSettleRes
+  | PromiseRegisterRes
+  | TaskGetRes
+  | TaskCreateRes
+  | TaskAcquireRes
+  | TaskSuspendRes
+  | TaskFulfillRes
+  | TaskReleaseRes
+  | TaskFenceRes
+  | TaskHeartbeatRes
+  | Error
+
+interface Error {
+  kind: string;
+  head: {
+    corrId: string;
+    status: 400 | 404 | 429 | 500;
+  };
+  data: string;
+}
+```
+
 ## Promises
+
+### Types
+
+**Promise**
+```ts
+interface Promise {
+  id: string;
+  state: "pending" | "resolved" | "rejected" | "rejected_canceled" | "rejected_timedout";
+  param: { headers: [key: string]: string; data: string; }
+  value: { headers: [key: string]: string; data: string; }
+  tags: [key: string]: string;
+  timeoutOn: number;
+  createdOn: number;
+  settledOn: number;
+}
+```
 
 ### Get
 
 **request**
-```
-{
-  "kind": "promise.get",
-  "head": {},
-  "data": { "id": "p_123" }
+```ts
+interface PromiseGetReq {
+  kind: "promise.get";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "promise.get",
-  "head": { "status": 200 },
-  "data": { "promise": {} }
+```ts
+interface PromiseGetRes {
+  kind: "promise.get",
+  head: {
+    status: 200;
+  };
+  data: {
+    promise: Promise;
+  };
 }
 ```
 
 ### Create
 
 **request**
-```
-{
-  "kind": "promise.create",
-  "head": {},
-  "data": {
-    "id": "p_123",
-    "param": { "headers": {}, "data": "" },
-    "timeout": 60000,
-    "tags": {}
-  }
+```ts
+interface PromiseCreateReq {
+  kind: "promise.create";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    param: { headers: [key: string]: string; data: string };
+    tags: [key: string]: string;
+    timeoutOn: number;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "promise.create",
-  "head": { "status": 201 | 200 },
-  "data": { "promise": {} }
+```ts
+interface PromiseCreateRes {
+  kind: "promise.create";
+  head: {
+    status: 200;
+  };
+  data: {
+    promise: Promise;
+  };
 }
 ```
 
 ### Settle
 
 **request**
-```
-{
-  "kind": "promise.settle",
-  "head": {},
-  "data": {
-    "id": "p_123",
-    "state": "RESOLVED" | "REJECTED" | "REJECTED_CANCELED",
-    "value": { "headers": {}, "data": "" }
-  }
+```ts
+interface PromiseSettleReq {
+  kind: "promise.settle";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    state: "resolved" | "rejected" | "rejected_canceled";
+    value: { headers: [key: string]: string; data: string };
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "promise.settle",
-  "head": { "status": 201 },
-  "data": { "promise": {} }
+```ts
+interface PromiseSettleRes {
+  kind: "promise.settle";
+  head: {
+    status: 200;
+  };
+  data: {
+    promise: Promise;
+  };
 }
 ```
 
 ### Register
 
 **request**
-```
-{
-  "kind": "promise.register",
-  "head": {},
-  "data": {
-    "awaiter": "p_123",
-    "awaited": "p_456",
-  }
+```ts
+interface PromiseRegisterReq {
+  kind: "promise.register";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    awaiter: string;
+    awaited: string;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "promise.register",
-  "head": { "status": 201 | 200 },
-  "data": {
-    "promise": {}
-  }
+```ts
+interface PromiseRegisterRes {
+  kind: "promise.register";
+  head: {
+    status: 200;
+  };
+  data: {
+    promise: Promise;
+  };
 }
 ```
 
 ## Tasks
 
+### Types
+
+**Task**
+```ts
+interface Task {
+  id: string;
+  version: number;
+}
+```
+
 ### Get
 
 **request**
-```
-{
-  "kind": "task.get",
-  "head": {},
-  "data": {
-    "id": "p_123"
-  }
+```ts
+interface TaskGetReq {
+  kind: "task.get";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.get",
-  "head": { "status": 200 },
-  "data": {
-    "task": {}
-  }
+```ts
+interface TaskGetRes {
+  kind: "task.get";
+  head: {
+    status: 200;
+  };
+  data: {
+    task: Task;
+  };
 }
 ```
 
 ### Create
 
 **request**
-```
-{
-  "kind": "task.create",
-  "head": {},
-  "data": {
-    "pid": "pid_123",
-    "ttl": 30000
-    "action": promise.create
-  }
+```ts
+interface TaskCreateReq {
+  kind: "task.create";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    pid: string;
+    ttl: number;
+    action: PromiseCreateReq;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.create",
-  "head": { "status": 201 },
-  "data": {
-    "task": {},
-    "promise": {}
-  }
+```ts
+interface TaskCreateRes {
+  kind: "task.create";
+  head: {
+    status: 200;
+  };
+  data: {
+    task: Task;
+    promise: Promise;
+  };
 }
 ```
 
 ### Acquire
 
 **request**
-```
-{
-  "kind": "task.acquire",
-  "head": {},
-  "data": {
-    "id": "t_123",
-    "version": 1,
-    "pid": "pid_123",
-    "ttl": 30000
-  }
+```ts
+interface TaskAcquireReq {
+  kind: "task.acquire";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    version: number;
+    pid: string;
+    ttl: number;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.acquire",
-  "head": { "status": 201 },
-  "data": {
-    "kind": "invoke",
-    "data": {
-      "invoked": {}
-    }
-  }
-}
-```
-
-```
-{
-  "kind": "task.acquire",
-  "head": { "status": 201 },
-  "data": {
-    "kind": "resume",
-    "data": {
-      "invoked": {},
-      "awaited": {}
-    }
-  }
+```ts
+interface TaskAcquireRes {
+  kind: "task.acquire";
+  head: {
+    status: 200;
+  };
+  data:
+    | { kind: "invoke"; data: { invoked: Promise } }
+    | { kind: "resume"; data: { invoked: Promise; awaited: Promise } };
 }
 ```
 
 ### Suspend
 
 **request**
-```
-{
-  "kind": "task.suspend",
-  "head": {},
-  "data": {
-    "id": "t_1",
-    "version": 1,
-    "actions": [ promise.register, ... ]
-  }
+```ts
+interface TaskSuspendReq {
+  kind: "task.suspend";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    version: number;
+    actions: PromiseRegisterReq[];
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.suspend",
-  "head": { "status": 201 | 300 },
-  "data": {}
+```ts
+interface TaskSuspendRes {
+  kind: "task.suspend";
+  head: {
+    status: 200 | 300;
+  };
 }
 ```
 
 ### Fulfill
 
 **request**
-```
-{
-  "kind": "task.fulfill",
-  "head": {},
-  "data": {
-    "id": "t_123",
-    "version": 1,
-    "action": promise.complete
-  }
+```ts
+interface TaskFulfillReq {
+  kind: "task.fulfill";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    version: number;
+    action: PromiseSettleReq;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.fulfill",
-  "head": { "status": 201 | 200 },
-  "data": { 
-    "promise": {}
-  }
+```ts
+interface TaskFulfillRes {
+  kind: "task.fulfill";
+  head: {
+    status: 200;
+  };
+  data: {
+    promise: Promise;
+  };
 }
 ```
 
 ### Release
 
 **request**
-```
-{
-  "kind": "task.release",
-  "head": {},
-  "data": {
-    "id": "t_123",
-    "version": 0
-  }
+```ts
+interface TaskReleaseReq {
+  kind: "task.release";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.release",
-  "head": { "status": 201 },
-  "data": {}
+```ts
+interface TaskReleaseRes {
+  kind: "task.release";
+  head: {
+    status: 200;
+  };
 }
 ```
 
 ### Fence
 
 **request**
-```
-{
-  "kind": "task.fence",
-  "head": {},
-  "data": {
-    "id": "",
-    "version": 1,
-    "action": promise.create | promise.settle
-  }
+```ts
+interface TaskFenceReq {
+  kind: "task.fence";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    id: string;
+    version: number;
+    action: PromiseCreateReq | PromiseSettleReq;
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.fence",
-  "head": { "status": 200 },
-  "data": {
-    "action": {}
-  }
+```ts
+interface TaskFenceRes {
+  kind: "task.fence";
+  head: {
+    status: 200;
+  };
+  data: {
+    action: PromiseCreateRes | PromiseSettleRes;
+  };
 }
 ```
 
 ### Heartbeat
 
 **request**
-```
-{
-  "kind": "task.heartbeat",
-  "head": {},
-  "data": {
-    "pid": "pid_123"
-  }
+```ts
+interface TaskHeartbeatReq {
+  kind: "task.heartbeat";
+  head: {
+    auth?: string;
+    corrId: string;
+  };
+  data: {
+    pid: string;
+    tasks: Task[];
+  };
 }
 ```
 
 **response**
-```
-{
-  "kind": "task.heartbeat",
-  "head": { "status": 200 },
-  "data": {}
+```ts
+interface TaskHeartbeatRes {
+  kind: "task.heartbeat";
+  head: {
+    status: 200;
+  };
 }
 ```
 
 ## Messages
 
-```
-{
-  "kind": "invoke" | "resume",
-  "head": {},
-  "data": {
-    "task": {
-      "id": "",
-      "counter": 1
-    }
-  }
+```ts
+type Message = InvokeMessage | ResumeMessage;
+
+interface InvokeMessage {
+  kind: "invoke";
+  head: {};
+  data: {
+    task: Task;
+  };
+}
+
+interface ResumeMessage {
+  kind: "resume";
+  head: {};
+  data: {
+    task: Task;
+  };
 }
 ```
