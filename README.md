@@ -203,7 +203,7 @@ interface PromiseSubscribeReq {
     corrId: string;
   };
   data: {
-    id: string;
+    awaited: string;
     address: string;
   };
 }
