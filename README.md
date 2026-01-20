@@ -61,9 +61,9 @@ interface Error {
 interface Promise {
   id: string;
   state: "pending" | "resolved" | "rejected" | "rejected_canceled" | "rejected_timedout";
-  param: { headers: [key: string]: string; data: string; }
-  value: { headers: [key: string]: string; data: string; }
-  tags: [key: string]: string;
+  param: { headers: { [key: string]: string }; data: string };
+  value: { headers: { [key: string]: string }; data: string };
+  tags: { [key: string]: string };
   timeoutAt: number;
   createdAt: number;
   settledAt?: number;
@@ -91,6 +91,7 @@ interface PromiseGetReq {
 interface PromiseGetRes {
   kind: "promise.get",
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -111,8 +112,8 @@ interface PromiseCreateReq {
   };
   data: {
     id: string;
-    param: { headers: [key: string]: string; data: string };
-    tags: [key: string]: string;
+    param: { headers: { [key: string]: string }; data: string };
+    tags: { [key: string]: string };
     timeoutAt: number;
   };
 }
@@ -123,6 +124,7 @@ interface PromiseCreateReq {
 interface PromiseCreateRes {
   kind: "promise.create";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -144,7 +146,7 @@ interface PromiseSettleReq {
   data: {
     id: string;
     state: "resolved" | "rejected" | "rejected_canceled";
-    value: { headers: [key: string]: string; data: string };
+    value: { headers: { [key: string]: string }; data: string };
   };
 }
 ```
@@ -154,6 +156,7 @@ interface PromiseSettleReq {
 interface PromiseSettleRes {
   kind: "promise.settle";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -184,6 +187,7 @@ interface PromiseRegisterReq {
 interface PromiseRegisterRes {
   kind: "promise.register";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -214,6 +218,7 @@ interface PromiseSubscribeReq {
 interface PromiseSubscribeRes {
   kind: "promise.subscribe";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -255,6 +260,7 @@ interface TaskGetReq {
 interface TaskGetRes {
   kind: "task.get";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -286,6 +292,7 @@ interface TaskCreateReq {
 interface TaskCreateRes {
   kind: "task.create";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -319,6 +326,7 @@ interface TaskAcquireReq {
 interface TaskAcquireRes {
   kind: "task.acquire";
   head: {
+    corrId: string;
     status: 200;
   };
   data:
@@ -350,6 +358,7 @@ interface TaskSuspendReq {
 interface TaskSuspendRes {
   kind: "task.suspend";
   head: {
+    corrId: string;
     status: 200 | 300;
   };
 }
@@ -378,6 +387,7 @@ interface TaskFulfillReq {
 interface TaskFulfillRes {
   kind: "task.fulfill";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -396,6 +406,10 @@ interface TaskReleaseReq {
     auth?: string;
     corrId: string;
   };
+  data: {
+    id: string;
+    version: number;
+  };
 }
 ```
 
@@ -404,6 +418,7 @@ interface TaskReleaseReq {
 interface TaskReleaseRes {
   kind: "task.release";
   head: {
+    corrId: string;
     status: 200;
   };
 }
@@ -432,6 +447,7 @@ interface TaskFenceReq {
 interface TaskFenceRes {
   kind: "task.fence";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -462,6 +478,7 @@ interface TaskHeartbeatReq {
 interface TaskHeartbeatRes {
   kind: "task.heartbeat";
   head: {
+    corrId: string;
     status: 200;
   };
 }
@@ -478,8 +495,8 @@ interface Schedule {
   cron: string;
   promiseId: string;
   promiseTimeout: number;
-  promiseParam: { headers: [key: string]: string; data: string };
-  promiseTags: [key: string]: string;
+  promiseParam: { headers: { [key: string]: string }; data: string };
+  promiseTags: { [key: string]: string };
   createdAt: number;
   nextRunAt: number;
   lastRunAt?: number;
@@ -507,6 +524,7 @@ interface ScheduleGetReq {
 interface ScheduleGetRes {
   kind: "schedule.get";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -530,8 +548,8 @@ interface ScheduleCreateReq {
     cron: string;
     promiseId: string;
     promiseTimeout: number;
-    promiseParam: { headers: [key: string]: string; data: string };
-    promiseTags: [key: string]: string;
+    promiseParam: { headers: { [key: string]: string }; data: string };
+    promiseTags: { [key: string]: string };
   };
 }
 ```
@@ -541,6 +559,7 @@ interface ScheduleCreateReq {
 interface ScheduleCreateRes {
   kind: "schedule.create";
   head: {
+    corrId: string;
     status: 200;
   };
   data: {
@@ -570,6 +589,7 @@ interface ScheduleDeleteReq {
 interface ScheduleDeleteRes {
   kind: "schedule.delete";
   head: {
+    corrId: string;
     status: 200;
   };
 }
@@ -578,7 +598,7 @@ interface ScheduleDeleteRes {
 ## Messages
 
 ```ts
-type Message = InvokeMessage | ResumeMessage;
+type Message = InvokeMessage | ResumeMessage | NotifyMessage;
 
 interface InvokeMessage {
   kind: "invoke";
@@ -593,6 +613,14 @@ interface ResumeMessage {
   head: {};
   data: {
     task: Task;
+  };
+}
+
+interface NotifyMessage {
+  kind: "notify";
+  head: {};
+  data: {
+    promise: Promise;
   };
 }
 ```
