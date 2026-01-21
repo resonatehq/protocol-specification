@@ -47,6 +47,7 @@ interface Error {
   head: {
     corrId: string;
     status: 400 | 404 | 429 | 500;
+    version: string;
   };
   data: string;
 }
@@ -79,6 +80,7 @@ interface PromiseGetReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -93,6 +95,7 @@ interface PromiseGetRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     promise: Promise;
@@ -109,6 +112,7 @@ interface PromiseCreateReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -126,6 +130,7 @@ interface PromiseCreateRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     promise: Promise;
@@ -142,6 +147,7 @@ interface PromiseSettleReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -158,6 +164,7 @@ interface PromiseSettleRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     promise: Promise;
@@ -174,6 +181,7 @@ interface PromiseRegisterReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     awaiter: string;
@@ -189,6 +197,7 @@ interface PromiseRegisterRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     promise: Promise;
@@ -205,6 +214,7 @@ interface PromiseSubscribeReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     awaited: string;
@@ -220,6 +230,7 @@ interface PromiseSubscribeRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     promise: Promise;
@@ -248,6 +259,7 @@ interface TaskGetReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -262,6 +274,7 @@ interface TaskGetRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     task: Task;
@@ -278,6 +291,7 @@ interface TaskCreateReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     pid: string;
@@ -294,6 +308,7 @@ interface TaskCreateRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     task: Task;
@@ -311,6 +326,7 @@ interface TaskAcquireReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -328,6 +344,7 @@ interface TaskAcquireRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data:
     | { kind: "invoke"; data: { invoked: Promise } }
@@ -344,6 +361,7 @@ interface TaskSuspendReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -360,6 +378,7 @@ interface TaskSuspendRes {
   head: {
     corrId: string;
     status: 200 | 300;
+    version: string;
   };
 }
 ```
@@ -373,6 +392,7 @@ interface TaskFulfillReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -389,6 +409,7 @@ interface TaskFulfillRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     promise: Promise;
@@ -405,6 +426,7 @@ interface TaskReleaseReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -420,6 +442,7 @@ interface TaskReleaseRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
 }
 ```
@@ -433,6 +456,7 @@ interface TaskFenceReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -449,6 +473,7 @@ interface TaskFenceRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     action: PromiseCreateRes | PromiseSettleRes;
@@ -465,6 +490,7 @@ interface TaskHeartbeatReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     pid: string;
@@ -480,6 +506,7 @@ interface TaskHeartbeatRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
 }
 ```
@@ -512,6 +539,7 @@ interface ScheduleGetReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -526,6 +554,7 @@ interface ScheduleGetRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     schedule: Schedule;
@@ -542,6 +571,7 @@ interface ScheduleCreateReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -561,6 +591,7 @@ interface ScheduleCreateRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
   data: {
     schedule: Schedule;
@@ -577,6 +608,7 @@ interface ScheduleDeleteReq {
   head: {
     auth?: string;
     corrId: string;
+    version: string;
   };
   data: {
     id: string;
@@ -591,6 +623,7 @@ interface ScheduleDeleteRes {
   head: {
     corrId: string;
     status: 200;
+    version: string;
   };
 }
 ```
