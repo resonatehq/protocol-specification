@@ -1,6 +1,67 @@
-# Protocol Specification
+# Resonate Protocol Specification
 
-**request**
+## Overview
+
+A transport-agnostic durable execution protocol.
+
+### Request Structure
+
+All requests follow a common structure:
+
+```ts
+interface Request {
+  kind: string;
+  head: {
+    auth?: string;
+    corrId: string;
+    version: string;
+  };
+  data: { ... };
+}
+```
+
+**auth**
+
+   Optional bearer token for authentication.
+
+**corrId**
+
+   Correlation identifier for request/response matching. The same value will be included in the response.
+
+**version**
+
+   The protocol version supported by the client. Uses date-based versioning (e.g., `"2025-01-15"`).
+
+### Response Structure
+
+All responses follow a common structure:
+
+```ts
+interface Response {
+  kind: string;
+  head: {
+    corrId: string;
+    status: number;
+    version: string;
+  };
+  data: { ... };
+}
+```
+
+**corrId**
+
+   Correlation identifier matching the request.
+
+**status**
+
+   The response status code.
+
+**version**
+
+   The protocol version used by the server. Uses date-based versioning (e.g., `"2025-01-15"`).
+
+## Requests
+
 ```ts
 type Req =
   | PromiseGetReq
@@ -21,7 +82,8 @@ type Req =
   | ScheduleDeleteReq
 ```
 
-**response**
+## Responses
+
 ```ts
 type Res =
   | PromiseGetRes
@@ -46,7 +108,7 @@ interface Error {
   kind: string;
   head: {
     corrId: string;
-    status: 400 | 404 | 429 | 500;
+    status: 400 | 404 | 409 | 429 | 500;
     version: string;
   };
   data: string;
@@ -58,6 +120,7 @@ interface Error {
 ### Types
 
 **Promise**
+
 ```ts
 interface Promise {
   id: string;
@@ -71,9 +134,44 @@ interface Promise {
 }
 ```
 
+**id**
+
+   The identifier of the promise.
+
+**state**
+
+   The current state of the promise. Can be one of: `pending`, `resolved`, `rejected`, `rejected_canceled`, or `rejected_timedout`.
+
+**param**
+
+   The promise parameters. The `data` field is base64 encoded.
+
+**value**
+
+   The promise result value. The `data` field is base64 encoded.
+
+**tags**
+
+   Key-value metadata for the promise.
+
+**timeoutAt**
+
+   Unix timestamp in milliseconds when the promise will be automatically rejected with state `rejected_timedout`.
+
+**createdAt**
+
+   Unix timestamp in milliseconds when the promise was created.
+
+**settledAt**
+
+   Unix timestamp in milliseconds when the promise was settled. Only present for promises in a terminal state.
+
 ### Get
 
-**request**
+Retrieves a promise by its identifier.
+
+**Request**
+
 ```ts
 interface PromiseGetReq {
   kind: "promise.get";
@@ -88,7 +186,12 @@ interface PromiseGetReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the promise to retrieve.
+
+**Response**
+
 ```ts
 interface PromiseGetRes {
   kind: "promise.get",
@@ -103,9 +206,20 @@ interface PromiseGetRes {
 }
 ```
 
+Returns the promise if found.
+
+**Errors**
+
+**404**
+
+   Promise not found.
+
 ### Create
 
-**request**
+Creates a new promise with the specified identifier.
+
+**Request**
+
 ```ts
 interface PromiseCreateReq {
   kind: "promise.create";
@@ -123,7 +237,24 @@ interface PromiseCreateReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier for the promise.
+
+**param**
+
+   The promise parameters. The `data` field must be base64 encoded.
+
+**tags**
+
+   Key-value metadata for the promise. If a `resonate:invoke` tag is present, an `InvokeMessage` is sent to the specified address on creation. If a `resonate:timeout` tag is set to `true`, the promise transitions to `resolved` instead of `rejected_timedout` when the timeout is reached.
+
+**timeoutAt**
+
+   Unix timestamp in milliseconds when the promise will timeout.
+
+**Response**
+
 ```ts
 interface PromiseCreateRes {
   kind: "promise.create";
@@ -138,9 +269,14 @@ interface PromiseCreateRes {
 }
 ```
 
+Returns the promise. If a promise with the same identifier already exists, returns the existing promise (idempotent).
+
 ### Settle
 
-**request**
+Settles a pending promise with a terminal state.
+
+**Request**
+
 ```ts
 interface PromiseSettleReq {
   kind: "promise.settle";
@@ -157,7 +293,20 @@ interface PromiseSettleReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the promise to settle.
+
+**state**
+
+   The terminal state for the promise. Use `resolved` for successful completion, `rejected` for failure, or `rejected_canceled` for cancellation.
+
+**value**
+
+   The promise result value. The `data` field must be base64 encoded.
+
+**Response**
+
 ```ts
 interface PromiseSettleRes {
   kind: "promise.settle";
@@ -172,9 +321,14 @@ interface PromiseSettleRes {
 }
 ```
 
+Returns the promise in its current state. If the promise is already settled, returns the existing state (idempotent).
+
 ### Register
 
-**request**
+Registers a dependency between two promises, indicating that the awaiter is waiting for the awaited promise to settle.
+
+**Request**
+
 ```ts
 interface PromiseRegisterReq {
   kind: "promise.register";
@@ -190,7 +344,16 @@ interface PromiseRegisterReq {
 }
 ```
 
-**response**
+**awaiter**
+
+   The identifier of the promise that is waiting.
+
+**awaited**
+
+   The identifier of the promise being waited on.
+
+**Response**
+
 ```ts
 interface PromiseRegisterRes {
   kind: "promise.register";
@@ -205,9 +368,14 @@ interface PromiseRegisterRes {
 }
 ```
 
+Returns the awaited promise. If the awaited promise is already settled, no dependency is registered.
+
 ### Subscribe
 
-**request**
+Subscribes to a promise, receiving a notification when it settles.
+
+**Request**
+
 ```ts
 interface PromiseSubscribeReq {
   kind: "promise.subscribe";
@@ -223,7 +391,16 @@ interface PromiseSubscribeReq {
 }
 ```
 
-**response**
+**awaited**
+
+   The identifier of the promise to subscribe to.
+
+**address**
+
+   The destination address where a `NotifyMessage` will be sent when the promise settles.
+
+**Response**
+
 ```ts
 interface PromiseSubscribeRes {
   kind: "promise.subscribe";
@@ -238,11 +415,14 @@ interface PromiseSubscribeRes {
 }
 ```
 
+Returns the awaited promise. If the awaited promise is already settled, no subscription is registered.
+
 ## Tasks
 
 ### Types
 
 **Task**
+
 ```ts
 interface Task {
   id: string;
@@ -250,9 +430,20 @@ interface Task {
 }
 ```
 
+**id**
+
+   The identifier of the task.
+
+**version**
+
+   The task version for optimistic concurrency control.
+
 ### Get
 
-**request**
+Retrieves a task by its identifier.
+
+**Request**
+
 ```ts
 interface TaskGetReq {
   kind: "task.get";
@@ -267,7 +458,12 @@ interface TaskGetReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the task to retrieve.
+
+**Response**
+
 ```ts
 interface TaskGetRes {
   kind: "task.get";
@@ -282,9 +478,20 @@ interface TaskGetRes {
 }
 ```
 
+Returns the task if found.
+
+**Errors**
+
+**404**
+
+   Task not found.
+
 ### Create
 
-**request**
+Creates a new task and its associated promise.
+
+**Request**
+
 ```ts
 interface TaskCreateReq {
   kind: "task.create";
@@ -301,7 +508,20 @@ interface TaskCreateReq {
 }
 ```
 
-**response**
+**pid**
+
+   The process identifier of the worker creating the task.
+
+**ttl**
+
+   Time-to-live in milliseconds. The task must be heartbeated within this interval to maintain its lease.
+
+**action**
+
+   A `PromiseCreateReq` specifying the promise to create for this task.
+
+**Response**
+
 ```ts
 interface TaskCreateRes {
   kind: "task.create";
@@ -311,15 +531,20 @@ interface TaskCreateRes {
     version: string;
   };
   data: {
-    task: Task;
+    task?: Task;
     promise: Promise;
   };
 }
 ```
 
+Returns the task and its associated promise. If a task is returned, a lease has been successfully acquired. If a task with the same promise identifier already exists, returns only the promise (idempotent).
+
 ### Acquire
 
-**request**
+Acquires a lease on a pending task.
+
+**Request**
+
 ```ts
 interface TaskAcquireReq {
   kind: "task.acquire";
@@ -337,7 +562,24 @@ interface TaskAcquireReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the task to acquire.
+
+**version**
+
+   The expected task version for optimistic concurrency control.
+
+**pid**
+
+   The process identifier of the worker acquiring the task.
+
+**ttl**
+
+   Time-to-live in milliseconds for the lease.
+
+**Response**
+
 ```ts
 interface TaskAcquireRes {
   kind: "task.acquire";
@@ -352,9 +594,20 @@ interface TaskAcquireRes {
 }
 ```
 
+Returns either an `invoke` or `resume` payload. An `invoke` is returned when the task is being executed for the first time. A `resume` is returned when the task is resuming after a previously awaited promise has settled.
+
+**Errors**
+
+**409**
+
+   Version mismatch.
+
 ### Suspend
 
-**request**
+Suspends a task while waiting for one or more promises to settle.
+
+**Request**
+
 ```ts
 interface TaskSuspendReq {
   kind: "task.suspend";
@@ -371,7 +624,20 @@ interface TaskSuspendReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the task to suspend.
+
+**version**
+
+   The expected task version for optimistic concurrency control.
+
+**actions**
+
+   An array of `PromiseRegisterReq` specifying the promises to await.
+
+**Response**
+
 ```ts
 interface TaskSuspendRes {
   kind: "task.suspend";
@@ -383,9 +649,20 @@ interface TaskSuspendRes {
 }
 ```
 
+Returns status `200` if the task was suspended. Returns status `300` if a previously awaited promise has already settled, indicating the worker can continue execution immediately with the current lease.
+
+**Errors**
+
+**409**
+
+   Version mismatch.
+
 ### Fulfill
 
-**request**
+Completes a task and settles its associated promise.
+
+**Request**
+
 ```ts
 interface TaskFulfillReq {
   kind: "task.fulfill";
@@ -402,7 +679,20 @@ interface TaskFulfillReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the task to fulfill.
+
+**version**
+
+   The expected task version for optimistic concurrency control.
+
+**action**
+
+   A `PromiseSettleReq` specifying how to settle the task's promise.
+
+**Response**
+
 ```ts
 interface TaskFulfillRes {
   kind: "task.fulfill";
@@ -417,9 +707,20 @@ interface TaskFulfillRes {
 }
 ```
 
+Returns the promise in its current state. If the promise is already settled, returns the existing state (idempotent).
+
+**Errors**
+
+**409**
+
+   Version mismatch.
+
 ### Release
 
-**request**
+Releases a task's lease without completing it, allowing the task to be re-acquired.
+
+**Request**
+
 ```ts
 interface TaskReleaseReq {
   kind: "task.release";
@@ -435,7 +736,16 @@ interface TaskReleaseReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the task to release.
+
+**version**
+
+   The expected task version for optimistic concurrency control.
+
+**Response**
+
 ```ts
 interface TaskReleaseRes {
   kind: "task.release";
@@ -447,9 +757,18 @@ interface TaskReleaseRes {
 }
 ```
 
+**Errors**
+
+**409**
+
+   Version mismatch.
+
 ### Fence
 
-**request**
+Executes a promise operation only if the task's lease is still valid.
+
+**Request**
+
 ```ts
 interface TaskFenceReq {
   kind: "task.fence";
@@ -466,7 +785,20 @@ interface TaskFenceReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the task.
+
+**version**
+
+   The expected task version for optimistic concurrency control.
+
+**action**
+
+   A `PromiseCreateReq` or `PromiseSettleReq` to execute if the lease is valid.
+
+**Response**
+
 ```ts
 interface TaskFenceRes {
   kind: "task.fence";
@@ -481,9 +813,20 @@ interface TaskFenceRes {
 }
 ```
 
+Returns the result of the fenced operation.
+
+**Errors**
+
+**409**
+
+   Version mismatch.
+
 ### Heartbeat
 
-**request**
+Extends the lease for one or more tasks.
+
+**Request**
+
 ```ts
 interface TaskHeartbeatReq {
   kind: "task.heartbeat";
@@ -499,7 +842,16 @@ interface TaskHeartbeatReq {
 }
 ```
 
-**response**
+**pid**
+
+   The process identifier of the worker.
+
+**tasks**
+
+   An array of tasks to heartbeat.
+
+**Response**
+
 ```ts
 interface TaskHeartbeatRes {
   kind: "task.heartbeat";
@@ -516,6 +868,7 @@ interface TaskHeartbeatRes {
 ### Types
 
 **Schedule**
+
 ```ts
 interface Schedule {
   id: string;
@@ -530,9 +883,48 @@ interface Schedule {
 }
 ```
 
+**id**
+
+   The identifier of the schedule.
+
+**cron**
+
+   A cron expression (standard 5-field format) specifying when to create promises.
+
+**promiseId**
+
+   A template for the promise identifier. Supports `{{.id}}` and `{{.timestamp}}` substitutions.
+
+**promiseTimeout**
+
+   The timeout in milliseconds for created promises.
+
+**promiseParam**
+
+   The parameters for created promises. The `data` field is base64 encoded.
+
+**promiseTags**
+
+   Key-value metadata for created promises.
+
+**createdAt**
+
+   Unix timestamp in milliseconds when the schedule was created.
+
+**nextRunAt**
+
+   Unix timestamp in milliseconds for the next scheduled run.
+
+**lastRunAt**
+
+   Unix timestamp in milliseconds of the last run. Only present if the schedule has run at least once.
+
 ### Get
 
-**request**
+Retrieves a schedule by its identifier.
+
+**Request**
+
 ```ts
 interface ScheduleGetReq {
   kind: "schedule.get";
@@ -547,7 +939,12 @@ interface ScheduleGetReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the schedule to retrieve.
+
+**Response**
+
 ```ts
 interface ScheduleGetRes {
   kind: "schedule.get";
@@ -562,9 +959,20 @@ interface ScheduleGetRes {
 }
 ```
 
+Returns the schedule if found.
+
+**Errors**
+
+**404**
+
+   Schedule not found.
+
 ### Create
 
-**request**
+Creates a new schedule that creates promises on a recurring basis.
+
+**Request**
+
 ```ts
 interface ScheduleCreateReq {
   kind: "schedule.create";
@@ -584,7 +992,32 @@ interface ScheduleCreateReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier for the schedule.
+
+**cron**
+
+   A cron expression (standard 5-field format) specifying when to create promises.
+
+**promiseId**
+
+   A template for the promise identifier. Supports `{{.id}}` and `{{.timestamp}}` substitutions.
+
+**promiseTimeout**
+
+   The timeout in milliseconds for created promises.
+
+**promiseParam**
+
+   The parameters for created promises. The `data` field must be base64 encoded.
+
+**promiseTags**
+
+   Key-value metadata for created promises.
+
+**Response**
+
 ```ts
 interface ScheduleCreateRes {
   kind: "schedule.create";
@@ -599,9 +1032,14 @@ interface ScheduleCreateRes {
 }
 ```
 
+Returns the schedule. If a schedule with the same identifier already exists, returns the existing schedule (idempotent).
+
 ### Delete
 
-**request**
+Deletes a schedule.
+
+**Request**
+
 ```ts
 interface ScheduleDeleteReq {
   kind: "schedule.delete";
@@ -616,7 +1054,12 @@ interface ScheduleDeleteReq {
 }
 ```
 
-**response**
+**id**
+
+   The unique identifier of the schedule to delete.
+
+**Response**
+
 ```ts
 interface ScheduleDeleteRes {
   kind: "schedule.delete";
@@ -628,11 +1071,23 @@ interface ScheduleDeleteRes {
 }
 ```
 
+**Errors**
+
+**404**
+
+   Schedule not found.
+
 ## Messages
 
 ```ts
 type Message = InvokeMessage | ResumeMessage | NotifyMessage;
+```
 
+### InvokeMessage
+
+Sent to the address specified in the `resonate:invoke` tag when a promise is created.
+
+```ts
 interface InvokeMessage {
   kind: "invoke";
   head: {};
@@ -640,7 +1095,13 @@ interface InvokeMessage {
     task: Task;
   };
 }
+```
 
+### ResumeMessage
+
+Sent to the address specified in the `resonate:invoke` tag when a previously awaited promise settles.
+
+```ts
 interface ResumeMessage {
   kind: "resume";
   head: {};
@@ -648,7 +1109,13 @@ interface ResumeMessage {
     task: Task;
   };
 }
+```
 
+### NotifyMessage
+
+Sent to the address specified in a `promise.subscribe` request when the promise settles.
+
+```ts
 interface NotifyMessage {
   kind: "notify";
   head: {};
