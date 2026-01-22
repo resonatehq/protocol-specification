@@ -87,7 +87,7 @@ Enqueue(Resume)
 | Enqueue(Invoke) | ⟨s, v, ⊥, ∅⟩ | ⟨s, v, ⊥, ∅⟩ | - | |
 | Enqueue(Invoke) | ⟨f, ⊥, ⊥, ∅⟩ | ⟨f, ⊥, ⊥, ∅⟩ | - | |
 | Enqueue(Resume) | ⊥ | ⊥ | - | |
-| Enqueue(Resume) | ⟨p, v, c, C⟩ | ⟨p, v, c, C::{Resume}⟩ | - | |
-| Enqueue(Resume) | ⟨a, v, c, C⟩ | ⟨a, v, c, C::{Resume}⟩ | - | |
+| Enqueue(Resume) | ⟨p, v, c, C⟩ | ⟨p, v, c, C::Resume⟩ | - | |
+| Enqueue(Resume) | ⟨a, v, c, C⟩ | ⟨a, v, c, C::Resume⟩ | - | |
 | Enqueue(Resume) | ⟨s, v, ⊥, ∅⟩ | ⟨p, v+1, Resume, ∅⟩ | - | Send(Resume) |
 | Enqueue(Resume) | ⟨f, ⊥, ⊥, ∅⟩ | ⟨f, ⊥, ⊥, ∅⟩ | - | |

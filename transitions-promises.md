@@ -80,15 +80,15 @@ PromiseSubscribe(s)
 | PromiseSettle(c) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseSettle(c) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseRegister(c) | ⊥ | ⊥ | 404 | |
-| PromiseRegister(c) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C::{c}, S⟩ | 200 | |
-| PromiseRegister(c) | ⟨p, t, C, S⟩ | ⟨p, t, C::{c}, S⟩ | 200 | |
+| PromiseRegister(c) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C::c, S⟩ | 200 | |
+| PromiseRegister(c) | ⟨p, t, C, S⟩ | ⟨p, t, C::c, S⟩ | 200 | |
 | PromiseRegister(c) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseRegister(c) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseRegister(c) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseRegister(c) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseSubscribe(s) | ⊥ | ⊥ | 404 | |
-| PromiseSubscribe(s) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C, S::{s}⟩ | 200 | |
-| PromiseSubscribe(s) | ⟨p, t, C, S⟩ | ⟨p, t, C, S::{s}⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C, S::s⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨p, t, C, S⟩ | ⟨p, t, C, S::s⟩ | 200 | |
 | PromiseSubscribe(s) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseSubscribe(s) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseSubscribe(s) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
