@@ -56,8 +56,8 @@ Enqueue(Resume)
 | TaskSuspend(v, P) | ⊥ | ⊥ | 404 | |
 | TaskSuspend(v, P) | ⟨p, v, c, C⟩ | ⟨p, v, c, C⟩ | 409 | |
 | TaskSuspend(v', P) | ⟨p, v, c, C⟩ | ⟨p, v, c, C⟩ | 409 | |
-| TaskSuspend(v, P) | ⟨a, v, c, ∅⟩ ∧ P≠∅ ∧ ∀p∈P : Pending(p) | ⟨s, v, ⊥, ∅⟩ | 200 | |
-| TaskSuspend(v, P) | ⟨a, v, c, ∅⟩ ∧ P≠∅ ∧ ∃p∈P : Settled(p) | ⟨a, v, Resume, ∅⟩ | 300 | |
+| TaskSuspend(v, P) | ⟨a, v, c, ∅⟩ ∀p∈P : Pending(p) | ⟨s, v, ⊥, ∅⟩ | 200 | |
+| TaskSuspend(v, P) | ⟨a, v, c, ∅⟩ ∃p∈P : Settled(p) | ⟨a, v, Resume, ∅⟩ | 300 | |
 | TaskSuspend(v, P) | ⟨a, v, c, c'::C'⟩ | ⟨a, v, c', C'⟩ | 300 | |
 | TaskSuspend(v', P) | ⟨a, v, c, C⟩ | ⟨a, v, c, C⟩ | 409 | |
 | TaskSuspend(v, P) | ⟨s, v, ⊥, ∅⟩ | ⟨s, v, ⊥, ∅⟩ | 409 | |

@@ -308,6 +308,12 @@ interface PromiseSettleReq {
 
    The promise result value. The `data` field must be base64 encoded.
 
+**Errors**
+
+**404**
+
+   Promise not found.
+
 **Response**
 
 ```ts
