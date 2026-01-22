@@ -379,6 +379,12 @@ interface PromiseRegisterRes {
 
 Returns the awaited promise. If the awaited promise is already settled, no dependency is registered.
 
+**Errors**
+
+**404**
+
+   Promise not found.
+
 ### Subscribe
 
 Subscribes to a promise, receiving a notification when it settles.
@@ -425,6 +431,12 @@ interface PromiseSubscribeRes {
 ```
 
 Returns the awaited promise. If the awaited promise is already settled, no subscription is registered.
+
+**Errors**
+
+**404**
+
+   Promise not found.
 
 ## Tasks
 
@@ -607,6 +619,10 @@ Returns either an `invoke` or `resume` payload. An `invoke` is returned when the
 
 **Errors**
 
+**404**
+
+   Task not found.
+
 **409**
 
    Version mismatch.
@@ -658,9 +674,13 @@ interface TaskSuspendRes {
 }
 ```
 
-Returns status `200` if the task was suspended. Returns status `300` if a previously awaited promise has already settled, indicating the worker can continue execution immediately with the current lease.
+Returns status `200` if the task was suspended. Returns status `300` if an action promise has already settled or if a previously awaited promise has already settled, indicating the worker can continue execution immediately with the current lease.
 
 **Errors**
+
+**404**
+
+   Task not found.
 
 **409**
 
@@ -720,6 +740,10 @@ Returns the promise in its current state. If the promise is already settled, ret
 
 **Errors**
 
+**404**
+
+   Task not found.
+
 **409**
 
    Version mismatch.
@@ -767,6 +791,10 @@ interface TaskReleaseRes {
 ```
 
 **Errors**
+
+**404**
+
+   Task not found.
 
 **409**
 
@@ -825,6 +853,10 @@ interface TaskFenceRes {
 Returns the result of the fenced operation.
 
 **Errors**
+
+**404**
+
+   Task not found.
 
 **409**
 
