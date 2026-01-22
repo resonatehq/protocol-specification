@@ -247,7 +247,10 @@ interface PromiseCreateReq {
 
 **tags**
 
-   Key-value metadata for the promise. If a `resonate:invoke` tag is present, an `InvokeMessage` is sent to the specified address on creation. If a `resonate:timeout` tag is set to `true`, the promise transitions to `resolved` instead of `rejected_timedout` when the timeout is reached.
+   Key-value metadata for the promise.
+   - If a `resonate:target` tag is present, an `InvokeMessage` is sent to the specified address on creation.
+   - If a `resonate:delay` tag is present with a unix timestamp in milliseconds, the `InvokeMessage` is delayed until that time.
+   - If a `resonate:timer` tag is set to `true`, the promise transitions to `resolved` instead of `rejected_timedout` when the timeout is reached.
 
 **timeoutAt**
 
