@@ -447,6 +447,7 @@ Returns the awaited promise. If the awaited promise is already settled, no subsc
 ```ts
 interface Task {
   id: string;
+  state: "pending" | "acquired" | "suspended" | "fulfilled";
   version: number;
 }
 ```
@@ -454,6 +455,10 @@ interface Task {
 **id**
 
    The identifier of the task.
+
+**state**
+
+   The current state of the task. Can be one of: `pending`, `acquired`, `suspended`, or `fulfilled`.
 
 **version**
 
@@ -609,9 +614,10 @@ interface TaskAcquireRes {
     status: 200;
     version: string;
   };
-  data:
-    | { kind: "invoke"; data: { invoked: Promise } }
-    | { kind: "resume"; data: { invoked: Promise; awaited: Promise } };
+  data: {
+    kind: "invoke" | "resume";
+    data: { promise: Promise, preload: Promise[] };
+  }
 }
 ```
 
