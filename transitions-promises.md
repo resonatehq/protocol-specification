@@ -5,22 +5,38 @@
 | Symbol | Description |
 |--------|-------------|
 | ⊥ | Promise does not exist |
-| ⟨p, ⊥, C, S⟩ | Pending, no target, callbacks, subscriptions |
-| ⟨p, t, C, S⟩ | Pending, target, callbacks, subscriptions |
-| ⟨r, ⊥, ∅, ∅⟩ | Resolved |
-| ⟨x, ⊥, ∅, ∅⟩ | Rejected |
-| ⟨c, ⊥, ∅, ∅⟩ | Rejected (canceled) |
-| ⟨t, ⊥, ∅, ∅⟩ | Rejected (timedout) |
+| ⟨p, o, ⊥, ⊥, ∅, S⟩ | Pending |
+| ⟨p, o, ⊥, a, C, S⟩ | Pending with target address |
+| ⟨p, o, ⊤, ⊥, ∅, S⟩ | Pending (timer) |
+| ⟨p, o, ⊤, a, C, S⟩ | Pending (timer) with target address |
+| ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | Resolved |
+| ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | Rejected |
+| ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | Rejected (canceled) |
+| ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | Rejected (timedout) |
+
+## Symbols
+
+| Symbol | Description |
+|--------|-------------|
+| ⊤ | True |
+| ⊥ | False |
+| t | Current time |
+| o | Timeout time |
+| a | Target address |
+| C | Set of callbacks |
+| S | Set of subscriptions |
 
 ## Operations
 
 ```
 PromiseGet()
-PromiseCreate()
-PromiseCreate(t)
-PromiseSettle(s)
-PromiseSettle(x)
-PromiseSettle(c)
+PromiseCreate(t, o, ⊥, ⊥)
+PromiseCreate(t, o, ⊤, ⊥)
+PromiseCreate(t, o, ⊥, a)
+PromiseCreate(t, o, ⊤, a)
+PromiseSettle(t, r)
+PromiseSettle(t, x)
+PromiseSettle(t, c)
 PromiseRegister(c)
 PromiseSubscribe(s)
 ```
@@ -38,58 +54,120 @@ PromiseSubscribe(s)
 | Operation | Current State | Next State | Result | Side Effect(s) |
 |-----------|---------------|------------|--------|----------------|
 | PromiseGet() | ⊥ | ⊥ | 404 | |
-| PromiseGet() | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C, S⟩ | 200 | |
-| PromiseGet() | ⟨p, t, C, S⟩ | ⟨p, t, C, S⟩ | 200 | |
-| PromiseGet() | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseGet() | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseGet() | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseGet() | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate() | ⊥ | ⟨p, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate() | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C, S⟩ | 200 | |
-| PromiseCreate() | ⟨p, t, C, S⟩ | ⟨p, t, C, S⟩ | 200 | |
-| PromiseCreate() | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate() | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate() | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate() | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate(t) | ⊥ | ⟨p, t, ∅, ∅⟩ | 200 | Enqueue(Invoke) |
-| PromiseCreate(t) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C, S⟩ | 200 | |
-| PromiseCreate(t) | ⟨p, t, C, S⟩ | ⟨p, t, C, S⟩ | 200 | |
-| PromiseCreate(t) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate(t) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate(t) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseCreate(t) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(r) | ⊥ | ⊥ | 404 | |
-| PromiseSettle(r) | ⟨p, ⊥, C, S⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
-| PromiseSettle(r) | ⟨p, t, C, S⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
-| PromiseSettle(r) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(r) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(r) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(r) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(x) | ⊥ | ⊥ | 404 | |
-| PromiseSettle(x) | ⟨p, ⊥, C, S⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
-| PromiseSettle(x) | ⟨p, t, C, S⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
-| PromiseSettle(x) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(x) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(x) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(x) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(c) | ⊥ | ⊥ | 404 | |
-| PromiseSettle(c) | ⟨p, ⊥, C, S⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
-| PromiseSettle(c) | ⟨p, t, C, S⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
-| PromiseSettle(c) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(c) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(c) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSettle(c) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseGet() | ⟨p, o, ⊥, ⊥, ∅, S⟩ | ⟨p, o, ⊥, ⊥, ∅, S⟩ | 200 | |
+| PromiseGet() | ⟨p, o, ⊥, a, C, S⟩ | ⟨p, o, ⊥, a, C, S⟩ | 200 | |
+| PromiseGet() | ⟨p, o, ⊤, ⊥, ∅, S⟩ | ⟨p, o, ⊤, ⊥, ∅, S⟩ | 200 | |
+| PromiseGet() | ⟨p, o, ⊤, a, C, S⟩ | ⟨p, o, ⊤, a, C, S⟩ | 200 | |
+| PromiseGet() | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseGet() | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseGet() | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseGet() | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⊥ | ⟨p, o, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊥, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨p, o, ⊥, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊤, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨p, o, ⊤, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, ⊥) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⊥ | ⟨p, o, ⊤, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊥, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨p, o, ⊥, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊤, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨p, o, ⊤, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, ⊥) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⊥ | ⟨p, o, ⊥, a, ∅, ∅⟩ | 200 | Enqueue(Invoke) |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊥, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨p, o, ⊥, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊤, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨p, o, ⊤, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊥, a) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊥, a) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⊥ | ⟨p, o, ⊤, a, ∅, ∅⟩ | 200 | Enqueue(Invoke) |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊥, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨p, o, ⊥, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨p, o, ⊤, ⊥, ∅, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨p, o, ⊤, a, C, S⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseCreate(t, o, ⊤, a) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseCreate(t, o, ⊤, a) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, r) | ⊥ | ⊥ | 404 | |
+| PromiseSettle(t, r) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, r) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, r) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, r) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, r) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, x) | ⊥ | ⊥ | 404 | |
+| PromiseSettle(t, x) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, x) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, x) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, x) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, x) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, c) | ⊥ | ⊥ | 404 | |
+| PromiseSettle(t, c) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t < o | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊥, ⊥, ∅, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊥, a, C, S⟩ : t < o | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊥, a, C, S⟩ : t ≥ o | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t < o | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊤, ⊥, ∅, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊤, a, C, S⟩ : t < o | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨p, o, ⊤, a, C, S⟩ : t ≥ o | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | Enqueue(Resume) ∀c∈C, Send(Notify) ∀s∈S |
+| PromiseSettle(t, c) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, c) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, c) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSettle(t, c) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseRegister(c) | ⊥ | ⊥ | 404 | |
-| PromiseRegister(c) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C::c, S⟩ | 200 | |
-| PromiseRegister(c) | ⟨p, t, C, S⟩ | ⟨p, t, C::c, S⟩ | 200 | |
-| PromiseRegister(c) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseRegister(c) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseRegister(c) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseRegister(c) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseRegister(c) | ⟨p, o, ⊥, ⊥, ∅, S⟩ | ⟨p, o, ⊥, ⊥, ∅, S⟩ | 200 | |
+| PromiseRegister(c) | ⟨p, o, ⊥, a, C, S⟩ | ⟨p, o, ⊥, a, C::c, S⟩ | 200 | |
+| PromiseRegister(c) | ⟨p, o, ⊤, ⊥, ∅, S⟩ | ⟨p, o, ⊤, ⊥, ∅, S⟩ | 200 | |
+| PromiseRegister(c) | ⟨p, o, ⊤, a, C, S⟩ | ⟨p, o, ⊤, a, C::c, S⟩ | 200 | |
+| PromiseRegister(c) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseRegister(c) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseRegister(c) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseRegister(c) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
 | PromiseSubscribe(s) | ⊥ | ⊥ | 404 | |
-| PromiseSubscribe(s) | ⟨p, ⊥, C, S⟩ | ⟨p, ⊥, C, S::s⟩ | 200 | |
-| PromiseSubscribe(s) | ⟨p, t, C, S⟩ | ⟨p, t, C, S::s⟩ | 200 | |
-| PromiseSubscribe(s) | ⟨r, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSubscribe(s) | ⟨x, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSubscribe(s) | ⟨c, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ∅, ∅⟩ | 200 | |
-| PromiseSubscribe(s) | ⟨t, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨p, o, ⊥, ⊥, ∅, S⟩ | ⟨p, o, ⊥, ⊥, ∅, S::s⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨p, o, ⊥, a, C, S⟩ | ⟨p, o, ⊥, a, C, S::s⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨p, o, ⊤, ⊥, ∅, S⟩ | ⟨p, o, ⊤, ⊥, ∅, S::s⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨p, o, ⊤, a, C, S⟩ | ⟨p, o, ⊤, a, C, S::s⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨r, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨x, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨c, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
+| PromiseSubscribe(s) | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | ⟨t, ⊥, ⊥, ⊥, ∅, ∅⟩ | 200 | |
